@@ -7,6 +7,21 @@ from babel.numbers import format_currency
 import warnings
 warnings.filterwarnings('ignore')
 
+def daily_sales(dataframe: pd.DataFrame) -> pd.DataFrame:
+    daily_orders_df = dataframe.resample(rule='D', on='order_purchase_timestamp').agg({
+        "order_id": "nunique",
+        "price": "sum"
+    })
+    daily_orders_df.reset_index(inplace=True)
+    daily_orders_df.rename(columns={
+        "order_purchase_timestamp": "Waktu Pesanan",
+        "order_id": "Jumlah Pesanan",
+        "price": "revenue"
+    }, inplace=True)
+    
+    return daily_orders_df
+
+
 def create_demographic_df(dataframe: pd.DataFrame) -> pd.DataFrame: 
     demographic_df = dataframe.groupby(by='customer_state').size().reset_index(name='total_customers')
     demographic_df.sort_values(by='total_customers', ascending=False, inplace=True)
@@ -31,7 +46,7 @@ def create_rfm_df(dataframe: pd.DataFrame) -> pd.DataFrame:
 
     return rfm_df
 
-all_df = pd.read_csv('all_data_dashboard.csv')
+all_df = pd.read_csv('./dashboard/all_data_dashboard.csv')
 all_df.sort_values(by='order_purchase_timestamp', inplace=True)
 all_df['order_purchase_timestamp'] = pd.to_datetime(all_df['order_purchase_timestamp'])
 all_df.reset_index(inplace=True)
@@ -54,11 +69,28 @@ except:
 filtered_df = all_df[(all_df['order_purchase_timestamp'] >= str(start_date)) & 
                      (all_df['order_purchase_timestamp'] <= str(end_date))]
 
+daily_orders_df = daily_sales(filtered_df)
 demographic_df = create_demographic_df(filtered_df)
 average_rating_in_month = create_average_rating_in_month_df(filtered_df)
 rfm_df = create_rfm_df(filtered_df)
 
 st.title("Dashboard Submission Dicoding: Analisis Dataset E-Commerce")
+
+st.subheader("Grafik Total Order Harian")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    total_order = daily_orders_df['Jumlah Pesanan'].sum()
+    st.metric(label='Total Order', value=total_order)
+
+with col2:
+    total_revenue = daily_orders_df['revenue'].sum()
+    total_revenue = format_currency(total_revenue, 'BRL', locale='pt_BR')
+    st.metric(label='Total Revenue', value=total_revenue)
+
+daily_orders_df_plot = px.line(daily_orders_df, x='Waktu Pesanan', y='Jumlah Pesanan', title='Total Order Harian', markers=True, template='plotly_dark')
+st.plotly_chart(daily_orders_df_plot, theme='streamlit')
 
 st.subheader("Grafik Total Pelanggan per Negara Bagian")
 
