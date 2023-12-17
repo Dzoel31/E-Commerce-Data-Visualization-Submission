@@ -3,7 +3,7 @@
 ## Setup Dependecy
 
 ```bash
-pip install pandas matplotlib seaborn plotly babel
+pip install pandas streamlit plotly babel
 ```
 
 ## Run Streamlit
