@@ -121,17 +121,20 @@ st.subheader("Pelanggan terbaik berdasarkan RFM")
 
 col1, col2, col3 = st.columns(3)
 
-with col1:
-    avg_recency = round(rfm_df['recency'].mean(), 1)
-    st.metric(label='Rata-rata Recency', value=avg_recency)
+try: 
+    with col1:
+        avg_recency = round(rfm_df['recency'].mean(), 1)
+        st.metric(label='Rata-rata Recency', value=avg_recency)
 
-with col2:
-    avg_frequency = round(rfm_df['frequency'].mean(), 1)
-    st.metric(label='Rata-rata Frequency', value=avg_frequency)
+    with col2:
+        avg_frequency = round(rfm_df['frequency'].mean(), 1)
+        st.metric(label='Rata-rata Frequency', value=avg_frequency)
 
-with col3:
-    avg_monetary = round(rfm_df['monetary'].mean(), 1)
-    st.metric(label='Rata-rata Monetary', value=format_currency(avg_monetary, 'BRL', locale='pt_BR'))
+    with col3:
+        avg_monetary = round(rfm_df['monetary'].mean(), 1)
+        st.metric(label='Rata-rata Monetary', value=format_currency(avg_monetary, 'BRL', locale='pt_BR'))
+except:
+    st.error("Tidak ada data yang tersedia")
 
 figPlotly = make_subplots(rows=1, cols=3, subplot_titles=("Recency", "Frequency", "Monetary"))
 
